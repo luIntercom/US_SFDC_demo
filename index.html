@@ -38,6 +38,15 @@
       </div>
       <button class="bg-black text-white p-2 m-2 rounded hover:bg-opacity-75" onclick="reset()">Reset</button>
     </div>
+<button id="goToPortal">Go to Portal</button>
+
+<script>
+  document.getElementById("goToPortal").addEventListener("click", function() {
+    window.location.href = "https://luintercom.github.io/US_SFDC_demo/portal/";
+  });
+</script>
+
+
 <script>
   window.intercomSettings = {
     api_base: "https://api-iam.intercom.io",
