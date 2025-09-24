@@ -85,5 +85,31 @@
       })();
     </script>
 
+    <script>
+  window.intercomSettings = {
+    api_base: "https://api-iam.intercom.io",
+    app_id: "nzmi3xql",
+    intercom_user_jwt: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiYXhhODY0IiwiZW1haWwiOiJsdWlzQG1kbHNvbHV0aW9ucy5uZXQiLCJuYW1lIjoiVGVzcyBTdWxsaXZhbiIsImlhdCI6MTc1ODAwNzAzOX0.s9J3RDQq8Og48lMar5cBpDyOgNBVh4Q2YsU6UQM7EP0",
+    hand_off_with_javascript: () => {
+      // Redirect user to the relative URL
+      window.location.href = "./US_SFDC_demo/portal//";
+  }
+    //user_id: "axa864",
+    //email: "luis@mdlsolutions.net",
+    //name: "Tess Sullivan"
+    //intercom_user_jwt: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMTUzNzg2IiwiaWF0IjoxNzU0Njg5ODgwfQ.2TpIL_dcAI5O8qp4XkunnDrcKzlijhtWklahbrm_HAs"
+    // In Salesforce, ensure that each user has a unique external_id, typically their user_id or email.
+    // In Intercom, when installing Messenger, pass a user_id that matches the external_id used for that user in Salesforce.
+    // If no user_id exists, the user's email is used instead to match the external_id in Salesforce.
+
+  };
+</script>
+
+
+<script>
+  // We pre-filled your app ID in the widget URL: 'https://widget.intercom.io/widget/nzmi3xql'
+  (function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',w.intercomSettings);}else{var d=document;var i=function(){i.c(arguments);};i.q=[];i.c=function(args){i.q.push(args);};w.Intercom=i;var l=function(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/nzmi3xql';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);};if(document.readyState==='complete'){l();}else if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();
+</script>
+
   </body>
 </html>
