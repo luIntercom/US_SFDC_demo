@@ -43,6 +43,18 @@
 <button onclick="updateUserData()">Update User Data</button>
 
 <script>
+    
+  function updateUserData() {
+    Intercom('update', {
+      platform_account: 22514625,   // Replace with dynamic value
+      current_game: "Lightning Link Casino" // Replace with dynamic value
+     });
+      
+    alert("User data updated in Intercom!");
+    }
+  </script>
+
+<script>
   document.getElementById("goToPortal").addEventListener("click", function() {
     window.location.href = "portal/";
   });
