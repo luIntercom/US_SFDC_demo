@@ -40,11 +40,25 @@
     </div>
 <button id="goToPortal">Go to Portal</button>
 
+<button onclick="updateUserData()">Update User Data</button>
+
 <script>
   document.getElementById("goToPortal").addEventListener("click", function() {
     window.location.href = "portal/";
   });
 </script>
+
+<script>
+
+    function updateUserData() {
+      Intercom('update', {
+
+        platform_account_id: 22514625,   
+        current_game: "Lightning Link"
+      });
+      
+      alert("User data updated in Intercom!");
+    }
 
 
 <script>
