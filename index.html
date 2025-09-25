@@ -40,7 +40,15 @@
     </div>
 <button id="goToPortal">Go to Portal</button>
 
+<button onclick="openDeleteRequest()">
+    Request Data Deletion
+</button>
 
+<script>
+  function openDeleteRequest() {
+    Intercom('showNewMessage', 'I want to delete my account data');
+  }
+</script>
 
 <script>
   document.getElementById("goToPortal").addEventListener("click", function() {
