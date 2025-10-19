@@ -1,115 +1,147 @@
 <!doctype html>
 <html>
 <head>
-<title>Fin for SFDC</title>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://cdn.tailwindcss.com"></script>
+  <title>Fin for Salesforce</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsrsasign"></script>
 
-<script>
-function reset() {
-const cookies = document.cookie.split(";");
-for (let i = 0; i < cookies.length; i++) {
-const cookie = cookies[i];
-const eqPos = cookie.indexOf("=");
-const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
-}
-window.localStorage.clear();
-window.sessionStorage.clear();
-window.location.reload();
-}
+  <script>
+    // -------- DEMO HELPERS --------
+    function randomUserId() {
+      const bytes = new Uint8Array(16);
+      crypto.getRandomValues(bytes);
+      return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+    }
 
-function toggleForm() {
-const form = document.getElementById("ticketForm");
-form.classList.toggle("hidden");
-}
+    function randomName() {
+      const names = [
+        "James", "Tess", "Alex", "Jordan",
+        "Taylor", "Sam", "Avery", "Riley", "Luis"
+      ];
+      return names[Math.floor(Math.random() * names.length)];
+    }
 
-function submitTicket(e) {
-e.preventDefault();
-const name = document.getElementById("ticketName").value;
-const email = document.getElementById("ticketEmail").value;
-const subject = document.getElementById("ticketSubject").value;
-const message = document.getElementById("ticketMessage").value;
+    // New rule: <name><first 6 digits of user_id>@sfdcdemo.com
+    function emailFromNameAndUserId(name, user_id) {
+      const cleanName = name.trim().toLowerCase().replace(/\s+/g, '');
+      const shortId = user_id.slice(0, 6);
+      return `${cleanName}${shortId}@sfdcdemo.com`;
+    }
 
-// For demo: just log form values
-console.log({ name, email, subject, message });
-alert("Ticket submitted successfully!");
+    function createJwt({ user_id, email, name }) {
+      const secret = "Saxzwzo-j2uti4HtYx6PVgoYM4Ds_4OpfW9D0ry7Ujc"; // demo-only
+      const header = { alg: "HS256", typ: "JWT" };
+      const payload = {
+        user_id,
+        email,
+        name,
+        iss: "demo-client",
+        iat: KJUR.jws.IntDate.get("now"),
+        exp: KJUR.jws.IntDate.get("now + 1hour")
+      };
+      return KJUR.jws.JWS.sign("HS256", JSON.stringify(header), JSON.stringify(payload), secret);
+    }
 
-// Reset and hide form
-document.getElementById("ticketForm").reset();
-toggleForm();
-}
-</script>
+    // Generate identity + JWT
+    function generateIdentityAndJwt() {
+      const name = randomName();
+      const user_id = randomUserId();
+      const email = emailFromNameAndUserId(name, user_id);
+      const token = createJwt({ user_id, email, name });
+
+      window.intercomSettings = {
+        api_base: "https://api-iam.intercom.io",
+        app_id: "nzmi3xql",
+        intercom_user_jwt: token
+      };
+
+      document.getElementById("currentName").textContent = name;
+      document.getElementById("currentEmail").textContent = email;
+      document.getElementById("currentUserId").textContent = user_id;
+
+      return token;
+    }
+
+    // Fully switch to a new user/session
+    function newUser() {
+      if (typeof window.Intercom === "function") {
+        window.Intercom("shutdown");
+      }
+
+      generateIdentityAndJwt();
+
+      if (typeof window.Intercom === "function") {
+        window.Intercom("boot", window.intercomSettings);
+      } else {
+        (window.Intercom || function(){ (window.Intercom.q = window.Intercom.q || []).push(arguments); })(
+          "boot",
+          window.intercomSettings
+        );
+      }
+    }
+  </script>
 </head>
-<body class="p-6 flex flex-col flex-1 items-center justify-center min-h-screen bg-cover" 
-style="background-image: url('https://downloads.intercomcdn.com/i/o/1051523575/8c16c6bb97ae791131ead20c/blur.jpg')">
 
-<div class="flex flex-col space-y-2 items-center">
-<div>
-<img src="https://static.intercomassets.com/assets/default-avatars/fin/128-6a5eabbb84cc2b038b2afc6698ca0a974faf7adc9ea9f0fb3c3e78ac12543bc5.png" height="50" width="50">
-</div>
-<button class="bg-black text-white p-2 m-2 rounded hover:bg-opacity-75" onclick="reset()">Reset</button>
-<button class="bg-blue-600 text-white p-2 m-2 rounded hover:bg-opacity-75" onclick="toggleForm()">Submit Ticket</button>
-</div>
+<body class="relative flex flex-col items-center justify-center min-h-screen overflow-hidden text-center text-white">
 
-<!-- Hidden Ticket Form -->
-<form id="ticketForm" class="hidden bg-white shadow-md rounded-lg p-6 mt-6 w-80">
-<h2 class="text-lg font-semibold mb-4">Submit a Ticket</h2>
-<input id="ticketName" type="text" placeholder="Your Name" class="w-full border rounded p-2 mb-2" required>
-<input id="ticketEmail" type="email" placeholder="Your Email" class="w-full border rounded p-2 mb-2" required>
-<input id="ticketSubject" type="text" placeholder="Subject" class="w-full border rounded p-2 mb-2" required>
-<textarea id="ticketMessage" placeholder="Message" class="w-full border rounded p-2 mb-4" rows="3" required></textarea>
-<div class="flex justify-between">
-<button class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700" onclick="submitTicket(event)">Submit</button>
-<button type="button" class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500" onclick="toggleForm()">Cancel</button>
-</div>
-</form>
+  <!-- 🎥 Background Video -->
+  <video autoplay muted loop playsinline
+         class="absolute top-0 left-0 w-full h-full object-cover object-top z-[-2]">
+    <source src="https://videos.ctfassets.net/xny2w179f4ki/4qwcJQYYUbB2aQgIoSKu0B/18bb952c143cc39b5934bb21765cf2b4/Fin2_EnergySource_KW_v034_HybridSharpened_wParticles_WEB_10mb.mp4"
+            type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
 
-<script>
-(function(){
-var w=window;var ic=w.Intercom;
-if(typeof ic==="function"){
-ic('reattach_activator');ic('update',w.intercomSettings);
-} else {
-var d=document;var i=function(){i.c(arguments);};i.q=[];i.c=function(args){i.q.push(args);};
-w.Intercom=i;var l=function(){
-var s=d.createElement('script');s.type='text/javascript';s.async=true;
-s.src='https://widget.intercom.io/widget/nzmi3xql';
-var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);
-};
-if(document.readyState==='complete'){l();}
-else if(w.attachEvent){w.attachEvent('onload',l);}
-else{w.addEventListener('load',l,false);}
-}
-})();
-</script>
+  <!-- 🌑 Dark overlay to tone down brightness -->
+  <div class="absolute inset-0 bg-gradient-to-b from-black via-black/70 to-[#2b0045]/80 z-[-1]"></div>
 
-    <script>
-  window.intercomSettings = {
-    api_base: "https://api-iam.intercom.io",
-    app_id: "nzmi3xql",
-    intercom_user_jwt: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiYXhhODY0IiwiZW1haWwiOiJsdWlzQG1kbHNvbHV0aW9ucy5uZXQiLCJuYW1lIjoiVGVzcyBTdWxsaXZhbiIsImlhdCI6MTc1ODAwNzAzOX0.s9J3RDQq8Og48lMar5cBpDyOgNBVh4Q2YsU6UQM7EP0",
-    hand_off_with_javascript: () => {
-      // Redirect user to the relative URL
-      window.location.href = "./US_SFDC_demo/portal//";
-  }
-    //user_id: "axa864",
-    //email: "luis@mdlsolutions.net",
-    //name: "Tess Sullivan"
-    //intercom_user_jwt: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMTUzNzg2IiwiaWF0IjoxNzU0Njg5ODgwfQ.2TpIL_dcAI5O8qp4XkunnDrcKzlijhtWklahbrm_HAs"
-    // In Salesforce, ensure that each user has a unique external_id, typically their user_id or email.
-    // In Intercom, when installing Messenger, pass a user_id that matches the external_id used for that user in Salesforce.
-    // If no user_id exists, the user's email is used instead to match the external_id in Salesforce.
+  <!-- Main Content -->
+  <h1 class="text-4xl md:text-5xl font-bold mb-8 drop-shadow-lg">Fin for Salesforce</h1>
 
-  };
-</script>
+  <div class="flex flex-col items-center space-y-4 bg-black/50 px-8 py-6 rounded-xl shadow-lg backdrop-blur-sm">
+    <img src="https://static.intercomassets.com/assets/default-avatars/fin/128-6a5eabbb84cc2b038b2afc6698ca0a974faf7adc9ea9f0fb3c3e78ac12543bc5.png"
+         height="60" width="60" alt="Fin Avatar" class="mx-auto">
 
+    <div class="space-y-1 text-sm opacity-90">
+      <div><span class="font-medium">User ID:</span> <span id="currentUserId"></span></div>
+      <div><span class="font-medium">Name:</span> <span id="currentName"></span></div>
+      <div><span class="font-medium">Email:</span> <span id="currentEmail"></span></div>
+    </div>
 
-<script>
-  // We pre-filled your app ID in the widget URL: 'https://widget.intercom.io/widget/nzmi3xql'
-  (function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',w.intercomSettings);}else{var d=document;var i=function(){i.c(arguments);};i.q=[];i.c=function(args){i.q.push(args);};w.Intercom=i;var l=function(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/nzmi3xql';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);};if(document.readyState==='complete'){l();}else if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();
-</script>
+    <button class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-medium transition"
+            onclick="newUser()">
+      Switch User
+    </button>
+  </div>
 
+  <script>
+    // Generate the initial identity & boot the first session
+    generateIdentityAndJwt();
+  </script>
+
+  <!-- Intercom widget -->
+  <script>
+    (function () {
+      var w = window; var ic = w.Intercom;
+      if (typeof ic === "function") {
+        ic('boot', w.intercomSettings);
+      } else {
+        var d = document; var i = function () { i.c(arguments); }; i.q = [];
+        i.c = function (args) { i.q.push(args); }; w.Intercom = i;
+        var l = function () {
+          var s = d.createElement('script'); s.type = 'text/javascript'; s.async = true;
+          s.src = 'https://widget.intercom.io/widget/z1n0atmw';
+          var x = d.getElementsByTagName('script')[0]; x.parentNode.insertBefore(s, x);
+        };
+        w.Intercom('boot', w.intercomSettings);
+
+        if (d.readyState === 'complete') { l(); }
+        else if (w.attachEvent) { w.attachEvent('onload', l); }
+        else { w.addEventListener('load', l, false); }
+      }
+    })();
+  </script>
 </body>
 </html>
