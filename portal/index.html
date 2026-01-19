@@ -55,7 +55,14 @@
       window.intercomSettings = {
         api_base: "https://api-iam.intercom.io",
         app_id: "nzmi3xql",
-        intercom_user_jwt: token   
+        intercom_user_jwt: token,
+        handoff_with_javascript: () => {
+        
+        // zE('messenger', 'show');  // makes sure the widget + launcher are visible if you previously hid them
+        // zE('messenger', 'open');  // actually opens the messaging Web Widget
+        LiveChatWidget.init();
+        LiveChatWidget.call("maximize", { messageDraft: "I need help!" });
+      } 
       };
 
       document.getElementById("currentName").textContent = name;
