@@ -7,7 +7,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsrsasign"></script>
 
-
   <script>
     // -------- DEMO HELPERS --------
     function randomUserId() {
@@ -45,35 +44,26 @@
       return KJUR.jws.JWS.sign("HS256", JSON.stringify(header), JSON.stringify(payload), secret);
     }
 
-    // Generate identity + JWT
-    function generateIdentityAndJwt() {
-      const name = randomName();
-      const user_id = randomUserId();
-      const email = emailFromNameAndUserId(name, user_id);
+    function updateUiIdentity({ user_id, name, email }) {
+      document.getElementById("currentName").textContent = name;
+      document.getElementById("currentEmail").textContent = email;
+      document.getElementById("currentUserId").textContent = user_id;
+    }
+
+    function setIntercomSettingsAndBoot({ user_id, name, email }) {
       const token = createJwt({ user_id, email, name });
 
       window.intercomSettings = {
         api_base: "https://api-iam.intercom.io",
         app_id: "nzmi3xql",
-        intercom_user_jwt: token 
+        intercom_user_jwt: token
       };
 
-      document.getElementById("currentName").textContent = name;
-      document.getElementById("currentEmail").textContent = email;
-      document.getElementById("currentUserId").textContent = user_id;
+      updateUiIdentity({ user_id, name, email });
 
-      return token;
-    }
-
-    // Fully switch to a new user/session
-    function newUser() {
+      // reboot Intercom with the new identity
       if (typeof window.Intercom === "function") {
         window.Intercom("shutdown");
-      }
-
-      generateIdentityAndJwt();
-
-      if (typeof window.Intercom === "function") {
         window.Intercom("boot", window.intercomSettings);
       } else {
         (window.Intercom || function(){ (window.Intercom.q = window.Intercom.q || []).push(arguments); })(
@@ -81,11 +71,34 @@
           window.intercomSettings
         );
       }
+
+      return token;
     }
-    
+
+    // Default flow: random name + derived email
+    function generateIdentityAndJwt() {
+      const name = randomName();
+      const user_id = randomUserId();
+      const email = emailFromNameAndUserId(name, user_id);
+      return setIntercomSettingsAndBoot({ user_id, name, email });
+    }
+
+    // Fully switch to a new random user/session (existing behavior)
+    function newUser() {
+      generateIdentityAndJwt();
+    }
+
+    // NEW: "User: Tim" button behavior
+    // When selected -> name = "James Cliff", email = "luis@mdlsolutions.net"
+    // Still generate a JWT using this data (and a new random user_id)
+    function selectTimUser() {
+      const name = "James Cliff";
+      const email = "luis@mdlsolutions.net";
+      const user_id = randomUserId();
+      return setIntercomSettingsAndBoot({ user_id, name, email });
+    }
   </script>
 </head>
-
 
 <body class="relative flex flex-col items-center justify-center min-h-screen overflow-hidden text-center text-white">
 
@@ -113,10 +126,18 @@
       <div><span class="font-medium">Email:</span> <span id="currentEmail"></span></div>
     </div>
 
-    <button class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-medium transition"
-            onclick="newUser()">
-      Switch User
-    </button>
+    <div class="flex flex-col sm:flex-row gap-3 w-full justify-center">
+      <button class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-medium transition"
+              onclick="newUser()">
+        Switch User
+      </button>
+
+      <!-- NEW BUTTON -->
+      <button class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg font-medium transition"
+              onclick="selectTimUser()">
+        User: Tim
+      </button>
+    </div>
   </div>
 
   <script>
