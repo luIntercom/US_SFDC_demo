@@ -88,12 +88,12 @@
       generateIdentityAndJwt();
     }
 
-    // NEW: "User: James" button behavior
-    // When selected -> name = "James Cliff", email = "luis@mdlsolutions.net"
+    // NEW: "User: David" button behavior
+    // When selected -> name = "David Spencer", email = "luis@mdlsolutions.net"
     // Still generate a JWT using this data (and a new random user_id)
-    function selectJamesUser() {
-      const name = "James Cliff";
-      const email = "luis@mdlsolutions.net";
+    function selectDavidUser() {
+      const name = "David Spencer";
+      const email = "luis.herrerapettit@hq.intercom.com";
       const user_id = randomUserId();
       return setIntercomSettingsAndBoot({ user_id, name, email });
     }
@@ -134,8 +134,8 @@
 
       <!-- NEW BUTTON -->
       <button class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg font-medium transition"
-              onclick="selectJamesUser()">
-        User: James
+              onclick="selectDavidUser()">
+        User: David
       </button>
     </div>
   </div>
