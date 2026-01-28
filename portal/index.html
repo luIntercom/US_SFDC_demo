@@ -88,10 +88,10 @@
       generateIdentityAndJwt();
     }
 
-    // NEW: "User: Tim" button behavior
+    // NEW: "User: James" button behavior
     // When selected -> name = "James Cliff", email = "luis@mdlsolutions.net"
     // Still generate a JWT using this data (and a new random user_id)
-    function selectTimUser() {
+    function selectJamesUser() {
       const name = "James Cliff";
       const email = "luis@mdlsolutions.net";
       const user_id = randomUserId();
@@ -134,8 +134,8 @@
 
       <!-- NEW BUTTON -->
       <button class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg font-medium transition"
-              onclick="selectTimUser()">
-        User: Tim
+              onclick="selectJamesUser()">
+        User: James
       </button>
     </div>
   </div>
