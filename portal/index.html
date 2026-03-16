@@ -65,6 +65,7 @@
       if (typeof window.Intercom === "function") {
         window.Intercom("shutdown");
         window.Intercom("boot", window.intercomSettings);
+        window.Intercom("hide"); // 👈 add here
       } else {
         (window.Intercom || function(){ (window.Intercom.q = window.Intercom.q || []).push(arguments); })(
           "boot",
